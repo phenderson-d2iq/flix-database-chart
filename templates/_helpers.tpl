@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "flix-server.name" -}}
+{{- define "flix-database.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "flix-server.fullname" -}}
+{{- define "flix-database.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "flix-server.chart" -}}
+{{- define "flix-database.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "flix-server.labels" -}}
-helm.sh/chart: {{ include "flix-server.chart" . }}
-{{ include "flix-server.selectorLabels" . }}
+{{- define "flix-database.labels" -}}
+helm.sh/chart: {{ include "flix-database.chart" . }}
+{{ include "flix-database.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "flix-server.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "flix-server.name" . }}
+{{- define "flix-database.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "flix-database.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "flix-server.serviceAccountName" -}}
+{{- define "flix-database.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "flix-server.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "flix-database.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}

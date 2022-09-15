@@ -1,0 +1,12 @@
+---
+# Expose the Database via Service for connections
+apiVersion: v1
+kind: Service
+metadata:
+  name: flix-database-svc
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: flix-database
+  clusterIP: None

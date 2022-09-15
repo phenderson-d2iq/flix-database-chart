@@ -1,0 +1,128 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flix-database
+spec:
+  selector:
+    matchLabels:
+      app: flix-database
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: flix-database
+    spec:
+      containers:
+      - image: mysql:5.7
+        args:
+         - "--ignore-db-dir=lost+found"
+         - "--max-connections=100000"
+        name: database-server
+        env:
+        - name: MYSQL_DATABASE
+          value: flix-db
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: flix-db-secrets
+              key: db-user
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: flix-db-secrets
+              key: db-password
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: flix-db-secrets
+              key: root-passwd
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: flix-db-pv-claim
+
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: flix-ops
+  name: flix-ops
+spec:
+  containers:
+    - image: phildh/flix-server:6.4.1_28-ops
+      imagePullPolicy: Always
+      name: flix-server
+      ports:
+        - containerPort: 8080
+        - containerPort: 9876
+      env:
+        - name: FLIX_HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+      volumeMounts:
+        - name: flix-db-config
+          mountPath: /flix/config.yaml
+          subPath: config.yaml
+        - name: flix-server-pvc
+          mountPath: /mnt/flix-assets
+  initContainers:
+    - name: mysql-db-check
+      image: busybox:1.31
+      command: ['sh', '-c', 'echo -e "Checking for the availability of MySQL Server deployment"; while ! nc -z flix-database-svc.{{ .Release.Namespace }}.svc.cluster.local 3306; do sleep 1; printf "-"; done; echo -e "  >> MySQL DB Server has started";']
+    - name: flix-db-init
+      image: phildh/flix-server:6.4.1_28
+      args:
+        - --db-install
+        - --hostname=$(FLIX_HOSTNAME)
+        - --http-port=8080
+        - --asset-dir=/mnt/flix-assets
+        - --rpc-port=9876
+        - --rep-port=9877
+        - --config-file=/flix/config.yaml
+        - --log-file=/dev/stdout
+        - --db-host=flix-database-svc.{{ .Release.Namespace }}.svc.cluster.local
+        - --db-name=flix-db
+        - --db-username={{ .Values.mysqlDatabase.dbUser }}
+        - --db-password={{ .Values.mysqlDatabase.dbPassword }}
+        - -y
+      env:
+        - name: FLIX_HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: FLIX_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+      volumeMounts:
+        - name: flix-db-config
+          mountPath: /flix/config.yaml
+          subPath: config.yaml
+        - name: flix-server-pvc
+          mountPath: /mnt/flix-assets
+  volumes:
+    - name: flix-db-config
+      secret:
+        secretName: flix-db-config
+        items:
+          - key: config.yaml
+            path: config.yaml
+    - name: flix-server-pvc
+      emptyDir: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+

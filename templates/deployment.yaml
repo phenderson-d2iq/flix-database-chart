@@ -80,6 +80,9 @@ spec:
         - name: flix-server-pvc
           mountPath: /mnt/flix-assets
   initContainers:
+    - name: myapp-container
+      image: busybox:1.31
+      command: ['sh', '-c', 'echo Waiting 15 Seconds && sleep 15']
     - name: mysql-db-check
       image: busybox:1.31
       command: ['sh', '-c', 'echo -e "Checking for the availability of MySQL Server deployment"; while ! nc -z flix-database-svc.{{ .Release.Namespace }}.svc.cluster.local 3306; do sleep 1; printf "-"; done; echo -e "  >> MySQL DB Server has started";']
@@ -94,7 +97,7 @@ spec:
         - --rep-port=9877
         - --config-file=/flix/config.yaml
         - --log-file=/dev/stdout
-        - --db-host=flix-database-svc.{{ .Release.Namespace }}.svc.cluster.local
+        - --db-host=flix-database-svc
         - --db-name=flix-db
         - --db-username={{ .Values.mysqlDatabase.dbUser }}
         - --db-password={{ .Values.mysqlDatabase.dbPassword }}

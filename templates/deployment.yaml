@@ -80,7 +80,7 @@ spec:
         - name: flix-server-pvc
           mountPath: /mnt/flix-assets
   initContainers:
-    - name: myapp-container
+    - name: pause-for-mysql
       image: busybox:1.31
       command: ['sh', '-c', 'echo Waiting 15 Seconds && sleep 15']
     - name: mysql-db-check

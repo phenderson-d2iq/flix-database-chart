@@ -59,7 +59,7 @@ kind: Pod
 metadata:
   labels:
     run: flix-db-ops
-  name: flix-ops
+  name: flix-db-ops
 spec:
   containers:
     - image: phildh/flix-server:6.4.1_28-ops

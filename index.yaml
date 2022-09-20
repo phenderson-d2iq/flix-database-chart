@@ -3,12 +3,12 @@ entries:
   flix-database:
   - apiVersion: v2
     appVersion: 6.4.1
-    created: "2022-09-16T10:20:45.112332-05:00"
+    created: "2022-09-19T21:15:01.939197-05:00"
     description: A Helm chart for running Flix Using Cloud Kubernetes
-    digest: e30fb892a166c037b35f53a83f91324228f4c2a9ba9f6ce3c6df4f69ed53e3cd
+    digest: 58344792806638a768a0cc6420be3b95f84d23171b24eb11635e1daeb47655c4
     name: flix-database
     type: application
     urls:
     - https://phenderson-d2iq.github.io/flix-database-chart/flix-database-6.4.1.tgz
     version: 6.4.1
-generated: "2022-09-16T10:20:45.112072-05:00"
+generated: "2022-09-19T21:15:01.938316-05:00"

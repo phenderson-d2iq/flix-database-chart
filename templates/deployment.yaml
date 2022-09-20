@@ -58,7 +58,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    run: flix-ops
+    run: flix-db-ops
   name: flix-ops
 spec:
   containers:
@@ -80,13 +80,13 @@ spec:
         - name: flix-server-pvc
           mountPath: /mnt/flix-assets
   initContainers:
-    - name: pause-for-mysql
+    - name: wait-mysql
       image: busybox:1.31
       command: ['sh', '-c', 'echo Waiting 15 Seconds && sleep 15']
-    - name: mysql-db-check
+    - name: check-mysql
       image: busybox:1.31
       command: ['sh', '-c', 'echo -e "Checking for the availability of MySQL Server deployment"; while ! nc -z flix-database-svc.{{ .Release.Namespace }}.svc.cluster.local 3306; do sleep 1; printf "-"; done; echo -e "  >> MySQL DB Server has started";']
-    - name: flix-db-init
+    - name: init-mysql
       image: phildh/flix-server:6.4.1_28
       args:
         - --db-install
